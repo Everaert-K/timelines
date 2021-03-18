@@ -28,14 +28,18 @@ bool unwanted_events_between_matchpoints_on_both_timelines(int i, const timeline
     return false;
 }
 
-bool conflicts_at_edge(int i, const timeline& array1, const timeline& array2, const matchpoints& points ) {
+bool conflicts_at_edge(const timeline& array1, const timeline& array2, const matchpoints& points ) {
     // if they both aren't at the left edge and none of the 2 is neighbouring a matching point on its left side
     // this can never be the occassion for the first matchpoint hence the i!=0
-    int matchpoint_left_timeline1 =points.at(i).first; int matchpoint_left_timeline2 =points.at(i).second;
-    int matchpoint_right_timeline1 =points.at(i+1).first; int matchpoint_right_timeline2 =points.at(i+1).second;
+    int matchpoint_left_timeline1 =points.at(0).first; 
+    int matchpoint_left_timeline2 =points.at(0).second;
+    int matchpoint_right_timeline1 =points.at(points.size()-1).first; 
+    int matchpoint_right_timeline2 =points.at(points.size()-1).second;
 
     bool result1 = false;
     if(matchpoint_left_timeline1!=0 && matchpoint_left_timeline2!=0) {
+        result1 = true;
+        /* think this can be deleted
         if(i==0){ // If there are no other matches before then it can never merge
             std::cout<<"[log] There are only non-matching events before "<<array1.at(matchpoint_left_timeline1)<<" on both timelines, therefore matching isn't possible"<<std::endl;
             result1 =  true;
@@ -48,22 +52,29 @@ bool conflicts_at_edge(int i, const timeline& array1, const timeline& array2, co
                 result1 = true;
             }
         } 
+        */
     }
     // do the same as last rule but for the right side
     bool result2 = false;
     if(matchpoint_right_timeline1!=array1.size()-1 && matchpoint_right_timeline2!=array2.size()-1) {
+        result2 = true;
+        /*
         if(i==points.size()-1){
             // If there are no other matches after then it can never merge
             std::cout<<"[log] There are only non-matching events after "<<array1.at(matchpoint_right_timeline1)<<" on both timelines, therefore matching isn't possible"<<std::endl;
             result2 = true;
         }
         else {
-            int right_neighbour_timeline1 = points.at(i+1).first; int right_neighbour_timeline2 = points.at(i+1).second;
+            int right_neighbour_timeline1 = points.at(i+1).first; 
+            int right_neighbour_timeline2 = points.at(i+1).second;
             if(right_neighbour_timeline1-matchpoint_right_timeline1!=1 || right_neighbour_timeline2-matchpoint_right_timeline2!=1) {
                 std::cout<<"[log] There are matching events after "<<array1.at(matchpoint_right_timeline1)<<", but they are not right next to the match on 1 or both of the timelines therefore matching isn't possible"<<std::endl;
                 result2 = true;
+         
             }
-        }    
+        }
+        */
+
      }   
     return result1 || result2;
 }
@@ -145,11 +156,16 @@ void partialmerge_info_inbetween(timeline& array1, timeline& array2, matchpoints
 }
 
 void Detective::write_timeline(const timeline& t, bool last) {
-    std::cout<<"[";
-    for(size_t j=0;j<t.size()-1;j++) {
-        std::cout<<t.at(j)<<",";
+    if(t.size()==0) {
+        std::cout<<"[]";
     }
-    std::cout<<t.at(t.size()-1)<<"]";
+    else {
+        std::cout<<"[";
+        for(size_t j=0;j<t.size()-1;j++) {
+            std::cout<<t.at(j)<<",";
+        }
+        std::cout<<t.at(t.size()-1)<<"]";
+    }
     if(!last) {
         std::cout<<",";
     }
@@ -160,7 +176,6 @@ void Detective::load_json(const char* filename) {
     if(std::string(filename).find(".json") == std::string::npos){
         std::cerr << "[Warning]: " << filename << "does not have .json extention. Ignoring file.\n";
     }
-    std::cout<<"[log] started reading in "<<filename<<" as JSON format"<<std::endl;
     std::ifstream file(filename);
     std::stringstream ss;
     ss << file.rdbuf();
@@ -192,7 +207,6 @@ void Detective::load_json(const char* filename) {
     
 void Detective::write_json(){
     // this function will just print all the timelines in JSON format
-    std::cout<<"[log] The timelines are being printed in JSON format"<<std::endl;
     std::cout<<"["<<std::endl;
     for(size_t i=0;i<timelines.size()-1;i++) {
         timeline t = timelines.at(i);
@@ -235,9 +249,12 @@ bool Detective::can_timelines_merge(timeline& array1, timeline& array2) {
     }
     else {
         for(size_t i=0;i<points.size()-1;i++) {
-            if(unwanted_events_between_matchpoints_on_both_timelines(i,array1,array2,points)||conflicts_at_edge(i,array1,array2,points)) {
+            if(unwanted_events_between_matchpoints_on_both_timelines(i,array1,array2,points)) {
                 return false;
             }
+        }
+        if(conflicts_at_edge(array1,array2,points)) {
+            return false;
         }
     } 
     return true;
@@ -329,32 +346,19 @@ void Detective::merge_timelines(timeline& array1, timeline& array2) {
         if( (matchpoint_right_timeline1-matchpoint_left_timeline1==1 && matchpoint_right_timeline2-matchpoint_left_timeline2!=1)) {
             std::cout<<"[log] Merging: On the second timeline there is additional info between "
             <<array2.at(matchpoint_left_timeline2)<<" and "<<array2.at(matchpoint_right_timeline2)<<" so let's copy this"<<std::endl;
-            auto it = array1.begin();
-            it += matchpoint_left_timeline1;
-            it+=1; // not sure if correct
-            for(int j=matchpoint_left_timeline2+1;j<matchpoint_right_timeline2;j++) { // copy everything between
+            auto it = array1.begin() + matchpoint_right_timeline1;
+            for(int j=matchpoint_right_timeline2-1;j>matchpoint_left_timeline2;j--) { // copy everything between
                 array1.insert(it,array2.at(j));
-                it++;
             } 
         }
-        if( (matchpoint_right_timeline2-matchpoint_left_timeline2==1 && matchpoint_right_timeline1-matchpoint_left_timeline1!=1)) {
+        else if( (matchpoint_right_timeline2-matchpoint_left_timeline2==1 && matchpoint_right_timeline1-matchpoint_left_timeline1!=1)) {
             std::cout<<"[log] Merging: On the first timeline there is additional info between "
             <<array2.at(matchpoint_left_timeline2)<<" and "<<array2.at(matchpoint_right_timeline2)<<" so let's copy this"<<std::endl;
             
             auto it = array2.begin() + matchpoint_right_timeline2;
             for(int j=matchpoint_right_timeline1-1;j>matchpoint_left_timeline1;j--) {
-                std::cout<<array1.at(j)<<std::endl;
-                gdbarray2.insert(it,array1.at(j));
+                array2.insert(it,array1.at(j));
             }
-            /*
-            auto it = array2.begin() + matchpoint_left_timeline2;
-            // it+=1; 
-            for(int j=matchpoint_left_timeline1+1;j<matchpoint_right_timeline1;j++) { // copy everything between
-                std::cout<<array1.at(j)<<std::endl;
-                // array2.insert(it,array1.at(j));
-                // it++;
-            } 
-            */
         }
 
     }
