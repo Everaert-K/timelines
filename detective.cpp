@@ -1,10 +1,7 @@
 #include "detective.h"
 
-// trim from start (in place)
 static inline void ltrim(std::string &s);
-// trim from end (in place)
 static inline void rtrim(std::string &s);
-// trim from both ends (in place)
 static inline void trim(std::string &s);
 bool smaller_timeline(const timeline& a,const timeline& b);
 bool earlier_match(const std::pair<int, int>& a,const std::pair<int, int>& b);
@@ -56,6 +53,7 @@ void Detective::partialmerge_longer_left(timeline& array1, timeline& array2) {
         std::cout<<"[log] Partial Merging: The second timeline has more info at the start, so let's copy this"<<std::endl;
         for(int i=0;i<matchpoint_left_timeline2;i++) {
             auto it = array1.begin();
+            it = it+i;
             array1.insert(it,array2.at(i));
         }
     }
@@ -63,6 +61,7 @@ void Detective::partialmerge_longer_left(timeline& array1, timeline& array2) {
         std::cout<<"[log] Partial Merging: The first timeline has more info at the start, so let's copy this"<<std::endl;
         for(int i=0;i<matchpoint_left_timeline1;i++) {
             auto it = array2.begin();
+            it = it+i;
             array2.insert(it,array1.at(i));
         }
     }
@@ -72,20 +71,18 @@ void Detective::partialmerge_longer_right(timeline& array1, timeline& array2) {
      matchpoints points = find_matchingpoints(array1,array2);
     int matchpoint_right_timeline1 =points.at(points.size()-1).first; 
     int matchpoint_right_timeline2 =points.at(points.size()-1).second;
-    if( (matchpoint_right_timeline1!= (int) array1.size()-1 && matchpoint_right_timeline2== (int) array2.size()-1)){
+    if( (matchpoint_right_timeline1== (int) array1.size()-1 && matchpoint_right_timeline2!= (int) array2.size()-1)){
         std::cout<<"[log] Partial Merging: The second timeline has more info at the end, so let's copy this"<<std::endl;
-        for(size_t i=matchpoint_right_timeline1+1;i<array1.size();i++) {
-            auto it = array2.end();
-            it--;// not sure about this
-            array2.insert(it,array1.at(i));
-        }
-    }
-    else if( (matchpoint_right_timeline1==(int) array1.size()-1 && matchpoint_right_timeline2!= (int) array2.size()-1)){
-        std::cout<<"[log] Partial Merging: The first timeline has more info at the end, so let's copy this"<<std::endl;
         for(size_t i=matchpoint_right_timeline2+1;i<array2.size();i++) {
             auto it = array1.end();
-            it--;
             array1.insert(it,array2.at(i));
+        }
+    }
+    else if( (matchpoint_right_timeline1!=(int) array1.size()-1 && matchpoint_right_timeline2== (int) array2.size()-1)){
+        std::cout<<"[log] Partial Merging: The first timeline has more info at the end, so let's copy this"<<std::endl;
+        for(size_t i=matchpoint_right_timeline1+1;i<array1.size();i++) {
+            auto it = array2.end();
+            array2.insert(it,array1.at(i));
         }
     }
 }
@@ -208,8 +205,8 @@ bool Detective::can_timelines_merge(timeline& array1, timeline& array2) {
         int matchpoint_timeline1 = points.at(0).first; int matchpoint_timeline2 = points.at(0).second;
         // false if they are both at the same edge or neither of them is at an edge
         bool both_at_same_edge = (matchpoint_timeline1==0 && matchpoint_timeline2==0) || (matchpoint_timeline1==(int)array1.size()-1 && matchpoint_timeline2==(int)array2.size()-1);
-        bool no_match_at_edge = (matchpoint_timeline1!=0 || matchpoint_timeline1!=(int)array1.size()-1 || matchpoint_timeline2!=0 || matchpoint_timeline2!=(int)array2.size()-1);
-        if(both_at_same_edge || no_match_at_edge){ return false;}
+        bool no_match_at_edge = (matchpoint_timeline1!=0 && matchpoint_timeline1!=(int)array1.size()-1 && matchpoint_timeline2!=0 && matchpoint_timeline2!=(int)array2.size()-1);
+        if(both_at_same_edge || no_match_at_edge){return false;}
     }
     else {
         for(size_t i=0;i<points.size()-1;i++) {
@@ -246,7 +243,6 @@ bool Detective::is_partial_merge_possible(timeline& array1, timeline& array2) {
     }
     return false;
 }
-
 
 void Detective::merge_timelines(timeline& array1, timeline& array2) {
     // try to make the first timeline as long as possible since the other one will be thrown away anyway
