@@ -19,7 +19,6 @@ class Detective {
     std::vector<timeline> timelines;
     void load_json(const char* filename);
     void write_timeline(const timeline& t, bool last);
-    void write_json();
     matchpoints find_matchingpoints(timeline array1, timeline array2);
     void merge_timelines(timeline& array1, timeline& array2);
     void partially_merge_timelines(timeline& array1, timeline& array2);
@@ -34,6 +33,7 @@ public:
     Detective();
     Detective(const char* filename);
     void detect();
+    void write_json();
 };
 
 

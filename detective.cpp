@@ -137,7 +137,13 @@ void Detective::load_json(const char* filename) {
     if(std::string(filename).find(".json") == std::string::npos){
         std::cerr << "[Warning]: " << filename << "does not have .json extention. Ignoring file.\n";
     }
-    std::ifstream file(filename);
+    std::ifstream file;
+    file.open(filename);
+    if(file.fail()) {
+        std::cerr << "[Error] Could not open the provided file: "<<filename<<std::endl;
+        exit(EXIT_FAILURE);
+    }
+    // std::ifstream file(filename);
     std::stringstream ss;
     ss << file.rdbuf();
     std::string s = ss.str();
@@ -184,10 +190,6 @@ Detective::Detective(){
 Detective::Detective(const char* filename){
     std::cout<<"[log] Created Detective object"<<std::endl;
     load_json(filename);
-    std::sort(timelines.begin(),timelines.end(),smaller_timeline);
-    detect();
-    std::cout<<std::endl;
-    write_json();
 }
 
 bool Detective::can_timelines_merge(timeline& array1, timeline& array2) {
@@ -273,6 +275,7 @@ void Detective::detect() {
         exit(1);
     }
     if(timelines.size()==1){ return;}
+    std::sort(timelines.begin(),timelines.end(),smaller_timeline);
     bool changes = true;
     bool more_then_one_timeline = true;
     while(changes && more_then_one_timeline) {
