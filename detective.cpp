@@ -143,11 +143,16 @@ void Detective::load_json(const char* filename) {
         std::cerr << "[Error] Could not open the provided file: "<<filename<<std::endl;
         exit(EXIT_FAILURE);
     }
-    // std::ifstream file(filename);
     std::stringstream ss;
     ss << file.rdbuf();
     std::string s = ss.str();
+    
     trim(s);
+    if(s.size()==0) {
+        std::cerr << "[Error] "<<filename<<" appears to be empty"<<std::endl;
+        exit(EXIT_FAILURE);
+    }
+    
     s[0] = '{';
     s[s.size()-1] = '}';
     
@@ -163,17 +168,25 @@ void Detective::load_json(const char* filename) {
     }
     int number_of_timelines = index;
 
-    JSON json = JSON::parse(s);
-
-    for(int i=0;i<number_of_timelines;i++) {
-        timeline t = (timeline) json[std::to_string(i)];
-        timelines.push_back(t);
+    try {
+        JSON json = JSON::parse(s);
+        for(int i=0;i<number_of_timelines;i++) {
+            timeline t = (timeline) json[std::to_string(i)];
+            timelines.push_back(t);
+        }
     }
+    catch(...){
+        std::cerr<<"[Error] The formatting of "<<filename<<" does not seem to be correct"<<std::endl;
+        exit(EXIT_FAILURE);
+    }
+    
+    
     std::cout<<"[log] succesfully parsed "<<filename<<" as JSON format"<<std::endl;
 }
     
 void Detective::write_json(){
     // this function will just print all the timelines in JSON format
+    std::sort(timelines.begin(),timelines.end(),smaller_timeline);
     std::cout<<"["<<std::endl;
     for(size_t i=0;i<timelines.size()-1;i++) {
         timeline t = timelines.at(i);
