@@ -30,7 +30,6 @@ class Detective {
     bool conflicts_at_edge(const timeline& array1, const timeline& array2);
     void partialmerge_longer_right(timeline& array1, timeline& array2);
 public:
-    Detective();
     Detective(const char* filename);
     void detect();
     void write_json();
