@@ -15,8 +15,7 @@ $(BUILD_DIR)detective : $(sources)
 
 .PHONY: test
 test :
-	$(BUILD_DIR)$(EXECUTABLE) tests/input/*.json
-	# Add diff check with expected output
+	./test.sh 2>/dev/null
 
 .PHONY: clean
 clean : 

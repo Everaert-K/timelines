@@ -27,7 +27,7 @@ class Detective {
     bool can_timelines_merge(timeline& array1, timeline& array2);
     bool is_partial_merge_possible(timeline& array1, timeline& array2);
     void partialmerge_info_inbetween(timeline& array1, timeline& array2);
-    bool unwanted_events_between_matchpoints_on_both_timelines(int i, const timeline& array1, const timeline& array2);
+    bool events_between_matchpoints(int i, const timeline& array1, const timeline& array2);
     bool conflicts_at_edge(const timeline& array1, const timeline& array2);
     void partialmerge_longer_right(timeline& array1, timeline& array2);
 public:
