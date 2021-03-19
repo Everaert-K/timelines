@@ -1,5 +1,5 @@
 cc = g++
-c_flags = -Wall -Wextra -std=c++17
+c_flags = -g -Wall -Wextra -std=c++17
 include_directory = vendor/json/single_include
 # sources := $(wildcard *.cpp)
 sources := main.cpp # I changed this cuz I get linker errors otherwise
@@ -21,3 +21,7 @@ test :
 .PHONY: clean
 clean : 
 	rm -rf $(BUILD_DIR)
+
+.PHONY: format
+format:
+	indent -linux -l0 *.cpp
