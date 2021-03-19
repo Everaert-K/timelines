@@ -15,7 +15,7 @@ $(BUILD_DIR)detective : $(sources)
 
 .PHONY: test
 test :
-	./test.sh 2>/dev/null
+	./test.sh
 
 .PHONY: clean
 clean : 

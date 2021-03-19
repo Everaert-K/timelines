@@ -50,6 +50,7 @@ void Detective::partialmerge_longer_left(timeline & array1, timeline & array2)
 	assert(points.size() > 0);
 	int left_first = points.at(0).first;
 	int left_second = points.at(0).second;
+
 	if (left_first == 0 && left_second != 0) {
 		// copy everything from 0 until matchpoint_left_timeline2 -1 to timeline1
 		for (int i = 0; i < left_second; i++) {
@@ -73,13 +74,12 @@ void Detective::partialmerge_longer_right(timeline & array1, timeline & array2)
 	int matchpoint_right_timeline1 = points.at(points.size() - 1).first;
 	int matchpoint_right_timeline2 = points.at(points.size() - 1).second;
 	if ((matchpoint_right_timeline1 == (int)array1.size() - 1 && matchpoint_right_timeline2 != (int)array2.size() - 1)) {
-		std::cerr << "[log] (Partial) Merging: The second timeline has more info at the end, so let's copy this" << std::endl;
 		for (size_t i = matchpoint_right_timeline2 + 1; i < array2.size(); i++) {
 			auto it = array1.end();
 			array1.insert(it, array2.at(i));
 		}
 	} else if ((matchpoint_right_timeline1 != (int)array1.size() - 1 && matchpoint_right_timeline2 == (int)array2.size() - 1)) {
-		std::cerr << "[log] (Partial) Merging: The first timeline has more info at the end, so let's copy this" << std::endl;
+		//std::cerr << "[log] (Partial) Merging: The first timeline has more info at the end, so let's copy this" << std::endl;
 		for (size_t i = matchpoint_right_timeline1 + 1; i < array1.size(); i++) {
 			auto it = array2.end();
 			array2.insert(it, array1.at(i));
@@ -99,13 +99,13 @@ void Detective::partialmerge_info_inbetween(timeline & array1, timeline & array2
 		int matchpoint_right_timeline1 = points.at(i + 1).first;
 		int matchpoint_right_timeline2 = points.at(i + 1).second;
 		if ((matchpoint_right_timeline1 - matchpoint_left_timeline1 == 1 && matchpoint_right_timeline2 - matchpoint_left_timeline2 != 1)) {
-			std::cerr << "[log] (Partial) Merging: On the second timeline there is additional info, so let's copy this" << std::endl;
+			//std::cerr << "[log] (Partial) Merging: On the second timeline there is additional info, so let's copy this" << std::endl;
 			auto it = array1.begin() + matchpoint_right_timeline1;
 			for (int j = matchpoint_right_timeline2 - 1; j > matchpoint_left_timeline2; j--) {	// copy everything between thos points
 				it = array1.insert(it, array2.at(j));
 			}
 		} else if ((matchpoint_right_timeline2 - matchpoint_left_timeline2 == 1 && matchpoint_right_timeline1 - matchpoint_left_timeline1 != 1)) {
-			std::cerr << "[log] (Partial) Merging: On the first timeline there is additional info, so let's copy this" << std::endl;
+			//std::cerr << "[log] (Partial) Merging: On the first timeline there is additional info, so let's copy this" << std::endl;
 
 			auto it = array2.begin() + matchpoint_right_timeline2;
 			for (int j = matchpoint_right_timeline1 - 1; j > matchpoint_left_timeline1; j--) {
@@ -176,7 +176,6 @@ void Detective::load_json(const char *filename)
 		std::cerr << "[Error] The formatting of " << filename << " does not seem to be correct" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	std::cerr << "[log] succesfully parsed " << filename << " as JSON format" << std::endl;
 }
 
 void Detective::write_json() // make plit between split and string
@@ -194,18 +193,18 @@ void Detective::write_json() // make plit between split and string
 
 Detective::Detective(const char *filename)
 {
-	std::cerr << "[log] Created Detective object" << std::endl;
+	//std::cerr << "[log] Created Detective object" << std::endl;
 	load_json(filename);
 }
 
 bool Detective::can_timelines_merge(timeline & array1, timeline & array2) {
-	std::cerr << "[log] checking to see if timelines can be merged" << std::endl;
+	//std::cerr << "[log] checking to see if timelines can be merged" << std::endl;
 	matchpoints points = find_matchingpoints(array1, array2);
 	if (points.size() == 0) {
 		return false;
 	}			// if there are no matching points then we can never merge
 	if (points.size() == 1) {
-		std::cerr << "[log] There is only one matching point" << std::endl;
+		// std::cerr << "[log] There is only one matching point" << std::endl;
 		int matchpoint_timeline1 = points.at(0).first;
 		int matchpoint_timeline2 = points.at(0).second;
 		// false if they are both at the same edge or neither of them is at an edge => have to fulfull both requirements therefore ||
@@ -248,7 +247,7 @@ bool Detective::is_partial_merge_possible(timeline & array1, timeline & array2)
 	    || (matchpoint_right_timeline1 == (int)array1.size() - 1 && matchpoint_right_timeline2 != (int)array2.size() - 1);
 	if (max_one_match_at_one_edge) {
 		// you don't need to check if the element left from it isn't a matching point since you only look a the extrema
-		std::cerr << "[log] a partial merge is possible since 1 of the timeline starts or ends with a matching point while the other one has non-matching events before that" << std::endl;
+		//std::cerr << "[log] a partial merge is possible since 1 of the timeline starts or ends with a matching point while the other one has non-matching events before that" << std::endl;
 		return true;
 	}
 	// just check if the matching points on timeline 1 (or 2) are next to eachother while those on timeline 2 aren't e.g. [tan fight gunshot] and [sugar fight sweet gunshot]
@@ -261,7 +260,6 @@ bool Detective::is_partial_merge_possible(timeline & array1, timeline & array2)
 
 void Detective::merge_timelines(timeline & array1, timeline & array2) {
 	// try to make the first timeline as long as possible since the other one will be thrown away anyway
-	std::cerr << "[log] merging timelines : "<< std::endl;
 
 	matchpoints points = find_matchingpoints(array1, array2);
 	if (points.size() == 0) {
@@ -300,13 +298,10 @@ void Detective::detect()
 		changes = false;
 		size_t i = 1;
 		while (i < timelines.size()) {
-			std::cerr << "[log] We will try to merge with al the previous ones" << std::endl;
 			size_t j = 0;
 			bool merged;
 			while (j < i) {
 				if (can_timelines_merge(timelines.at(j), timelines.at(i))) {
-					std::cerr << "[log] They can do a full merge" << std::endl;
-
 					merge_timelines(timelines.at(j), timelines.at(i));
 					changes = true;
 					merged = true;
@@ -322,7 +317,6 @@ void Detective::detect()
 				it += i;
 				timelines.erase(it);
 				i--;	// since you erased a timeline at that position is now another timeline
-				std::cerr << "[log] Since they could fully merge one of the timelines was deleted" << std::endl;
 			}
 			i++;
 			more_then_one_timeline = timelines.size();
@@ -346,15 +340,9 @@ matchpoints Detective::find_matchingpoints(timeline array1, timeline array2)
 	}
 	std::sort(result.begin(), result.end(), earlier_match);
 	if (result.size() == 0) {
-		std::cerr << "[log] No matching points detected" << std::endl;
         return result;
 
 	} 
-	std::cerr << "[log] The matching points are: ";
-	for (size_t i = 0; i < result.size(); i++) {
-		std::cerr << array1.at(result.at(i).first) << " ";
-	}
-	std::cout << std::endl;
 	return result;
 }
 
