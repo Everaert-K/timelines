@@ -122,9 +122,9 @@ void Detective::write_timeline(const timeline & t, bool last)
 	} else {
 		std::cout << "[";
 		for (size_t j = 0; j < t.size() - 1; j++) {
-			std::cout << t.at(j) << ",";
+			std::cout << "\"" << t.at(j) << "\"" << ",";
 		}
-		std::cout << t.at(t.size() - 1) << "]";
+		std::cout << "\"" << t.at(t.size() - 1) << "\"" << "]";
 	}
 	if (!last) {
 		std::cout << ",";
