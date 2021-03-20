@@ -22,7 +22,6 @@ class Detective {
     void write_timeline(const timeline& t, bool last);
     matchpoints find_matchingpoints(timeline array1, timeline array2);
     void merge_timelines(timeline& array1, timeline& array2);
-    void partially_merge_timelines(timeline& array1, timeline& array2);
     void partialmerge_longer_left(timeline& array1, timeline& array2);
     bool can_timelines_merge(timeline& array1, timeline& array2);
     bool is_partial_merge_possible(timeline& array1, timeline& array2);
